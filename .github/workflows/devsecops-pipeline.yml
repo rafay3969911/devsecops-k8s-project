@@ -1,0 +1,21 @@
+name: DevSecOps-Pipeline
+on: [push]
+
+jobs:
+  security-scans:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Trivy Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'nginxinc/nginx-unprivileged:stable-alpine'
+          format: 'table'
+          exit-code: '0' # Taake scan fail hone par bhi pipeline chalti rahe
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Kubesec Scan
+        run: |
+          docker run -i kubesec/kubesec scan /dev/stdin < manifests/vulnerable-app.yaml
